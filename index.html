@@ -12,20 +12,21 @@
 
   <style>
     :root {
-      --sky-top: #3672b4;
-      --sky-mid: #7fa9d6;
-      --sky-low: #eaf1fa;
-      --pink: #d1477e;
-      --pink-soft: #f2d9e4;
-      --teal: #16867c;
-      --teal-soft: #d9eeeb;
-      --navy: #16305a;
-      --navy-deep: #0f2140;
-      --ink: #202942;
-      --muted: #5b6478;
+      --sky-top: #1fa5ea;
+      --sky-mid: #5cc6f4;
+      --sky-low: #e8f8ff;
+      --pink: #ff4f8b;
+      --pink-soft: #ffe1ec;
+      --teal: #12b886;
+      --teal-soft: #d3f7ec;
+      --gold: #ffc94d;
+      --navy: #123c6b;
+      --navy-deep: #0b2a4d;
+      --ink: #1c2b45;
+      --muted: #57657c;
       --card: #ffffff;
-      --border: #dde3ee;
-      --shadow: 0 14px 34px rgba(22, 48, 90, 0.1);
+      --border: #d8ecf9;
+      --shadow: 0 14px 34px rgba(18, 60, 107, 0.12);
       --radius: 22px;
     }
 
@@ -167,6 +168,11 @@
       color: var(--teal);
     }
 
+    .hero-copy h1 {
+      color: #ffffff;
+      text-shadow: 0 2px 14px rgba(11, 42, 77, 0.25);
+    }
+
     h2 {
       font-size: clamp(28px, 3.6vw, 38px);
       line-height: 1.2;
@@ -212,6 +218,11 @@
       color: var(--navy);
       max-width: 600px;
       margin-bottom: 24px;
+    }
+
+    .hero-copy .lead {
+      color: #ffffff;
+      text-shadow: 0 1px 8px rgba(11, 42, 77, 0.2);
     }
 
     .quick-facts {
@@ -264,11 +275,21 @@
       border: 0;
       cursor: pointer;
       font-size: 15px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
     }
 
     .button:hover {
       transform: translateY(-1px);
+    }
+
+    .button:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: none;
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      transform: none;
     }
 
     .button.primary {
@@ -279,6 +300,23 @@
 
     .button.primary:hover {
       background: var(--navy-deep);
+    }
+
+    .button.primary:active {
+      background: var(--navy-deep);
+    }
+
+    .button.primary.is-loading {
+      background: var(--muted);
+      box-shadow: none;
+    }
+
+    .button.primary.is-success {
+      background: var(--teal);
+    }
+
+    .button.primary.is-error {
+      background: #c23b3b;
     }
 
     .button.teal {
@@ -757,7 +795,7 @@
 
   <main>
     <section class="section hero">
-      <div>
+      <div class="hero-copy">
         <h1>
           Welcome Our<br />
           <span class="accent-teal">New Residents!</span>
@@ -1106,6 +1144,26 @@
     const form = document.getElementById("rsvpForm");
     const attendingFields = document.getElementById("attendingFields");
     const statusBox = document.getElementById("formStatus");
+    const submitButton = form.querySelector("button[type='submit']");
+    const submitButtonDefaultText = submitButton.textContent;
+
+    function setSubmitButtonState(state) {
+      submitButton.classList.remove("is-loading", "is-success", "is-error");
+      submitButton.disabled = state === "loading";
+
+      if (state === "loading") {
+        submitButton.classList.add("is-loading");
+        submitButton.textContent = "กำลังส่ง...";
+      } else if (state === "success") {
+        submitButton.classList.add("is-success");
+        submitButton.textContent = "ส่งสำเร็จ ✓";
+      } else if (state === "error") {
+        submitButton.classList.add("is-error");
+        submitButton.textContent = "ลองใหม่อีกครั้ง";
+      } else {
+        submitButton.textContent = submitButtonDefaultText;
+      }
+    }
 
     document.querySelectorAll("input[name='attendance']").forEach((radio) => {
       radio.addEventListener("change", () => {
@@ -1119,6 +1177,7 @@
 
       statusBox.className = "status";
       statusBox.textContent = "";
+      setSubmitButtonState("loading");
 
       const formData = new FormData(form);
 
@@ -1170,10 +1229,16 @@
         form.reset();
         attendingFields.classList.remove("show");
 
+        setSubmitButtonState("success");
+        setTimeout(() => setSubmitButtonState("idle"), 2500);
+
       } catch (error) {
         console.error(error);
         statusBox.className = "status error";
         statusBox.textContent = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+
+        setSubmitButtonState("error");
+        setTimeout(() => setSubmitButtonState("idle"), 2500);
       }
     });
   </script>
