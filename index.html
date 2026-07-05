@@ -275,11 +275,21 @@
       border: 0;
       cursor: pointer;
       font-size: 15px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease;
     }
 
     .button:hover {
       transform: translateY(-1px);
+    }
+
+    .button:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: none;
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      transform: none;
     }
 
     .button.primary {
@@ -290,6 +300,23 @@
 
     .button.primary:hover {
       background: var(--navy-deep);
+    }
+
+    .button.primary:active {
+      background: var(--navy-deep);
+    }
+
+    .button.primary.is-loading {
+      background: var(--muted);
+      box-shadow: none;
+    }
+
+    .button.primary.is-success {
+      background: var(--teal);
+    }
+
+    .button.primary.is-error {
+      background: #c23b3b;
     }
 
     .button.teal {
@@ -1117,6 +1144,26 @@
     const form = document.getElementById("rsvpForm");
     const attendingFields = document.getElementById("attendingFields");
     const statusBox = document.getElementById("formStatus");
+    const submitButton = form.querySelector("button[type='submit']");
+    const submitButtonDefaultText = submitButton.textContent;
+
+    function setSubmitButtonState(state) {
+      submitButton.classList.remove("is-loading", "is-success", "is-error");
+      submitButton.disabled = state === "loading";
+
+      if (state === "loading") {
+        submitButton.classList.add("is-loading");
+        submitButton.textContent = "กำลังส่ง...";
+      } else if (state === "success") {
+        submitButton.classList.add("is-success");
+        submitButton.textContent = "ส่งสำเร็จ ✓";
+      } else if (state === "error") {
+        submitButton.classList.add("is-error");
+        submitButton.textContent = "ลองใหม่อีกครั้ง";
+      } else {
+        submitButton.textContent = submitButtonDefaultText;
+      }
+    }
 
     document.querySelectorAll("input[name='attendance']").forEach((radio) => {
       radio.addEventListener("change", () => {
@@ -1130,6 +1177,7 @@
 
       statusBox.className = "status";
       statusBox.textContent = "";
+      setSubmitButtonState("loading");
 
       const formData = new FormData(form);
 
@@ -1181,10 +1229,16 @@
         form.reset();
         attendingFields.classList.remove("show");
 
+        setSubmitButtonState("success");
+        setTimeout(() => setSubmitButtonState("idle"), 2500);
+
       } catch (error) {
         console.error(error);
         statusBox.className = "status error";
         statusBox.textContent = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+
+        setSubmitButtonState("error");
+        setTimeout(() => setSubmitButtonState("idle"), 2500);
       }
     });
   </script>
