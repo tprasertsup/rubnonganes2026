@@ -810,7 +810,7 @@
   </footer>
 
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxV78uY-JJizbUK0cD8XoR8O_3ePrzGDJd3_6RMucoU8WXHVRw8a6VN_ncpl_84q4LX/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyaIaAG0zhD9YHygmbxN-KVaKWrNW3nlx1VOYZ9U0o/dev";
 
     const form = document.getElementById("rsvpForm");
     const attendingFields = document.getElementById("attendingFields");
@@ -852,12 +852,20 @@
       try {
         const response = await fetch(GOOGLE_SCRIPT_URL, {
           method: "POST",
-          mode: "no-cors",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json;charset=UTF-8"
           },
           body: JSON.stringify(payload)
         });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok (${response.status})`);
+        }
+
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.error || "Unknown server error");
+        }
 
         statusBox.className = "status success";
         statusBox.textContent = "ส่งแบบตอบรับเรียบร้อยแล้ว ขอบคุณค่ะ/ครับ";
@@ -865,6 +873,7 @@
         attendingFields.classList.remove("show");
 
       } catch (error) {
+        console.error(error);
         statusBox.className = "status error";
         statusBox.textContent = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
       }
